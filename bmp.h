@@ -2,6 +2,7 @@
 typedef int LONG;
 typedef unsigned short WORD;
 typedef unsigned int DWORD;
+#pragma once
 #pragma pack(push, 1)
 typedef struct tagBITMAPFILEHEADER {
   WORD  bfType;

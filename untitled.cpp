@@ -1,16 +1,8 @@
 #include "stdio.h"
-#include <fstream>
-#include <vector>
-#include <iostream>
-#include "bmp.h"
 #include "ImageMatrix.h"
 using namespace std;
 
-PBITMAPFILEHEADER file_header;
-PBITMAPINFOHEADER info_header;
-
 short aux[8][8];
-
 
 void fill_aux(int row_start, int col_start, ImageMatrix* img)
 {	
@@ -28,7 +20,7 @@ void fill_aux(int row_start, int col_start, ImageMatrix* img)
 int main()
 {
 	ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/Desktop/lena512.bmp");	
-	cout << img->getValue(16,2) << endl;
+	cout << img->getValue(16,2) << endl; //prueba del método fill_aux
     fill_aux(16,0,img);		
     cout << aux[0][2] << endl;
 	return 0;

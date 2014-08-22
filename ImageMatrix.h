@@ -7,11 +7,11 @@ using namespace std;
 class ImageMatrix
 {
 	private:
-		short * matrix;
-		int width, height;
+		short * matrix;		
 		PBITMAPFILEHEADER file_header;
 		PBITMAPINFOHEADER info_header;
 	public:
+		int width, height;
 		ImageMatrix(std::string path)
 		{
 			
@@ -24,8 +24,8 @@ class ImageMatrix
 				file.seekg(0, ios::beg); //Regresar el buffer
 				buffer.resize(length); //dar tamaño al buffer
         		file.read(&buffer[0],length); //escribir en el buffer
-        		file_header = (PBITMAPFILEHEADER)(&buffer[0]);
-        		info_header = (PBITMAPINFOHEADER)(&buffer[0] + sizeof(BITMAPFILEHEADER));
+        		file_header = (PBITMAPFILEHEADER)(&buffer[0]); //castear buffer al header de imagen
+        		info_header = (PBITMAPINFOHEADER)(&buffer[0] + sizeof(BITMAPFILEHEADER)); 
 
         		this->width = info_header->biWidth;
         		this->height = info_header->biHeight;
@@ -34,7 +34,7 @@ class ImageMatrix
 			    {
 			    	for(int col = 0; col < width ; col++)
 				    {
-				    	matrix[row * width + col] = buffer[ file_header->bfOffBits + row * width + col] & 0xFF; 		   				    			    
+				    	matrix[row * width + col] = row * width + col;//buffer[ file_header->bfOffBits + row * width + col] & 0xFF; //Llenar matriz interna, volver positivo con el AND		   				    			    
 				    	//printf("%03i ", bm_matrix[row * info_header->biWidth + col]);
 				    }
 				    //puts("\n");
@@ -51,11 +51,13 @@ class ImageMatrix
 
 		void setValue(int row, int col, short val)
 		{
-			 matrix[row * width + col] = val;
+			 matrix[row * width + col] = val; 
 		}
 
 		short getValue(int row, int col)
 		{
 			return  matrix[row * width + col];
 		}
+
+
 };

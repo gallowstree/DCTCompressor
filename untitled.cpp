@@ -1,11 +1,29 @@
+#define _USE_MATH_DEFINES
+#include "math.h"
 #include "stdio.h"
 #include "ImageMatrix.h"
 #define DEBUG 
 using namespace std;
 
 vector< vector<short> > aux;
+vector< vector < double > > dct_mat;
 int sub_matrix_size;
 
+
+
+void init_dct(int size)
+{
+	dct_mat.reserve(sub_matrix_size);
+	for ( int row = 0 ; row < sub_matrix_size ; row++ )
+	{
+   		dct_mat[row].resize(sub_matrix_size);
+		for(int col = 0; col <  sub_matrix_size; col++)
+		{
+			dct_mat[row][col] = row == 0 ?
+								sqrt(1/8) : 0;
+		}
+	}
+}
 
 void fill_aux(int row_start, int col_start, ImageMatrix* img)
 {		

@@ -2,16 +2,17 @@
 #include "math.h"
 #include "stdio.h"
 #include "ImageMatrix.h"
-#define DEBUG 
+#define DEBUG
+
 using namespace std;
 
-vector< vector<short> > aux;
-vector< vector < double > > dct_mat;
+vector< vector<double> > aux;
+
 int sub_matrix_size;
 
 
 
-void init_dct(int size)
+/*void init_dct(int size)
 {
 	dct_mat.reserve(sub_matrix_size);
 	for ( int row = 0 ; row < sub_matrix_size ; row++ )
@@ -23,7 +24,7 @@ void init_dct(int size)
 								sqrt(1/8) : 0;
 		}
 	}
-}
+}*/
 
 void fill_aux(int row_start, int col_start, ImageMatrix* img)
 {		
@@ -35,7 +36,7 @@ void fill_aux(int row_start, int col_start, ImageMatrix* img)
 		{
 			aux[row][col] = img->getValue(row_start, col_start);	
 			#ifdef DEBUG
-			printf("%03i ", aux[row][col]);
+			printf("%7.3f ", aux[row][col]);
 			#endif
 		}
 		col_start = col_start_b;		
@@ -56,6 +57,18 @@ int main()
 	sub_matrix_size = 8;
 	init_aux(sub_matrix_size);
 	ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/Projects/DCTcompressor/Images/imagen.bmp");	
+    
+    vector< vector < double > > dct_mat =
+    {
+        {0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536},
+        {0.4904,  0.4157,  0.2778,  0.0975, -0.0975, -0.2778, -0.4157, -0.4904},
+        {0.4619,  0.1913, -0.1913, -0.4619, -0.4619, -0.1913,  0.1913 , 0.4619},
+        {0.4157, -0.0975, -0.4904, -0.2778,  0.2778,  0.4904,  0.0975, -0.4157},
+        {0.3536, -0.3536, -0.3536,  0.3536,  0.3536, -0.3536, -0.3536,  0.3536},
+        {0.2778, -0.4904,  0.0975,  0.4157, -0.4157, -0.0975,  0.4904, -0.2778},
+        {0.1913, -0.4619,  0.4619, -0.1913, -0.1913,  0.4619, -0.4619,  0.1913},
+        {0.0975, -0.2778,  0.4157, -0.4904,  0.4904, -0.4157,  0.2778 ,-0.0975}
+    };
     
 	for(int row = 0; row< (int)(img->width); row+=sub_matrix_size)
 	{

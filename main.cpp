@@ -57,6 +57,8 @@ void init_square_mat(int size, vector<vector<T>> &mat)
         mat[i].resize(size);
 }
 
+//TAL VEZ SE PUEDE HACE CON TEMPLATES PARA NO RESSCRIBIR CÓDIGO A LA HORA DE MULTIPLICAR,
+//DE MANERA QUE DEVUELVA MATRIZ DE DOUBLES O DE INTS DEPENDIENDO DE CÓMO SE LLAME
 vector<vector<double>> mult_square_mat(vector<vector<double>> &mat1, vector<vector<double>> &mat2, bool div)
 {
     int size = mat1.size();

@@ -1,0 +1,5 @@
+QUANTIZATION:
+
+http://msemac.redwoods.edu/~darnold/math45/laproj/Fall98/PKen/dct.pdf
+
+

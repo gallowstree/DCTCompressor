@@ -23,7 +23,7 @@ vector< vector < double > > dct_mat =
     {0.0975, -0.2778,  0.4157, -0.4904,  0.4904, -0.4157,  0.2778 ,-0.0975}
 };
 
-vector<vector<int>> quantiztion_50 =
+vector<vector<short>> quantiztion_50 =
 {
     {16,  11,  10,  16,  24,  40,  51,  61},
     {12,  12,  14,  19,  26,  58,  60,  55},
@@ -57,9 +57,8 @@ void init_square_mat(int size, vector<vector<T>> &mat)
         mat[i].resize(size);
 }
 
-//TAL VEZ SE PUEDE HACE CON TEMPLATES PARA NO RESSCRIBIR CÓDIGO A LA HORA DE MULTIPLICAR,
-//DE MANERA QUE DEVUELVA MATRIZ DE DOUBLES O DE INTS DEPENDIENDO DE CÓMO SE LLAME
-vector<vector<double>> mult_square_mat(vector<vector<double>> &mat1, vector<vector<double>> &mat2, bool div)
+
+vector<vector<double>> mult_square_mat(vector<vector<double>> &mat1, vector<vector<double>> &mat2)
 {
     int size = mat1.size();
     vector<vector<double>> product(size);
@@ -70,7 +69,7 @@ vector<vector<double>> mult_square_mat(vector<vector<double>> &mat1, vector<vect
         {
             for(int col = 0; col < size; col++)
             {
-                product[row][r_col] += div ? mat1[row][col]/mat2[col][r_col] : mat1[row][col]*mat2[col][r_col];
+                product[row][r_col] +=  mat1[row][col]*mat2[col][r_col];
             }
         }
     }
@@ -89,13 +88,23 @@ vector<vector<double>> transpose(vector<vector<T>> &mat)
     return outtrans;
 }
 
-vector<vector<int>> quantize(vector<vector<double>> &mat)
+vector<vector<short>> get_quantization_matrix(int quality)
 {
-    vector<vector<int>> q(sub_matrix_size);
-    init_square_mat(sub_matrix_size,q);
-    
-    return q;
+    return quantiztion_50; //TO-DO: generar matrices dependiendo de la calidad
 }
+
+vector<vector<short>> quantize(vector<vector<double>> &mat)
+{
+    vector<vector<short>> res(sub_matrix_size);
+    init_square_mat(sub_matrix_size,res);
+    vector<vector<short>> q = get_quantization_matrix(50);
+    for(int r = 0; r < sub_matrix_size; r++)
+        for(int c = 0; c < sub_matrix_size; c++)
+            res[r][c] = round(mat[r][c]/q[r][c]);
+    
+    return res;
+}
+
 
 
 void dct_compress(ImageMatrix *img)
@@ -108,9 +117,8 @@ void dct_compress(ImageMatrix *img)
         for(int col = 0; col < (int)(img->width); col+=sub_matrix_size)
         {
             fill_aux(row, col, img);
-            prod = mult_square_mat(dct_mat, aux, false);
-            //prod = mult_square_mat(dct_mat, test_mat);
-            prod = mult_square_mat(prod, dct_t, false);
+            prod = mult_square_mat(dct_mat, aux);
+            prod = mult_square_mat(prod, dct_t);
             quantize(prod);
         }
     }
@@ -131,12 +139,23 @@ void test()
         {-18, 8,  -5, -5,  -5, 8,  26 ,8}
     };
     vector< vector < double > > dct_t = transpose(dct_mat);
-    vector<vector<double>> prod = mult_square_mat(dct_mat, test_mat, false);
-    prod = mult_square_mat(prod, dct_t, false);
+    vector<vector<double>> prod = mult_square_mat(dct_mat, test_mat);
+    prod = mult_square_mat(prod, dct_t);
+    
     for(int r = 0; r < 8; r++){
         for(int c = 0; c < 8; c++)
         {
             printf("%7.3f ", prod[r][c]);
+        }
+        printf("\n");
+    }
+    printf("\n\n\n");
+    vector<vector<short>> q = quantize(prod);
+    
+    for(int r = 0; r < 8; r++){
+        for(int c = 0; c < 8; c++)
+        {
+            printf("%3i ", q[r][c]);
         }
         printf("\n");
     }

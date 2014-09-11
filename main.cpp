@@ -4,13 +4,13 @@
 #include "ImageMatrix.h"
 #include <sys/time.h>
 
-//#define DEBUG
-
 using namespace std;
 
+//contendrá las secciones n*n de la imagen original
 vector< vector<double> > aux;
-
+//tamaño de las matrices en que se dividirá la imagen (para otros diferentes de 8, se debe recalcular la matriz dct)
 const int sub_matrix_size = 8;
+//Matriz dct de 8*8 precalculada, para mejorar performance.
 vector< vector < double > > dct_mat =
 {
     {0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536},
@@ -22,7 +22,7 @@ vector< vector < double > > dct_mat =
     {0.1913, -0.4619,  0.4619, -0.1913, -0.1913,  0.4619, -0.4619,  0.1913},
     {0.0975, -0.2778,  0.4157, -0.4904,  0.4904, -0.4157,  0.2778 ,-0.0975}
 };
-
+//Matriz de cuantización estándard, nivel de calidad 50/100.
 vector<vector<short>> quantiztion_50 =
 {
     {16,  11,  10,  16,  24,  40,  51,  61},
@@ -35,7 +35,7 @@ vector<vector<short>> quantiztion_50 =
     {72,  92,  95,  98, 112, 100, 103,  99}
 };
 
-
+//Llenar la matriz auxiliar con la sección n*n de la imagen que empieza en row_start, col_start
 void fill_aux(int row_start, int col_start, ImageMatrix* img)
 {
     int col_start_b = col_start;
@@ -49,6 +49,7 @@ void fill_aux(int row_start, int col_start, ImageMatrix* img)
     }
 }
 
+//Inicializa/Dimensiona una matriz
 template<class T>
 void init_square_mat(int size, vector<vector<T>> &mat)
 {
@@ -57,8 +58,9 @@ void init_square_mat(int size, vector<vector<T>> &mat)
         mat[i].resize(size);
 }
 
-
-vector<vector<double>> mult_square_mat(vector<vector<double>> &mat1, vector<vector<double>> &mat2)
+//Multiplica dos matrices cuadradas
+template<class T, class T2>
+vector<vector<double>> mult_square_mat(vector<vector<T>> &mat1, vector<vector<T2>> &mat2)
 {
     int size = mat1.size();
     vector<vector<double>> product(size);
@@ -76,6 +78,7 @@ vector<vector<double>> mult_square_mat(vector<vector<double>> &mat1, vector<vect
     return product;
 }
 
+//Transpone la matriz
 template<class T>
 vector<vector<double>> transpose(vector<vector<T>> &mat)
 {
@@ -88,19 +91,24 @@ vector<vector<double>> transpose(vector<vector<T>> &mat)
     return outtrans;
 }
 
+//Genera una matriz de cuantización para la calidad indicada (calidad de 1 a 100)
+//100 = máxima calidad, menor compresión.
 vector<vector<short>> get_quantization_matrix(int quality)
 {
     return quantiztion_50; //TO-DO: generar matrices dependiendo de la calidad
 }
 
-vector<vector<short>> quantize(vector<vector<double>> &mat)
+//Divide cada elemento de mat por la matriz de cuantización
+//Si inverse es verdadero, multiplica en vez de dividir (para descompresión)
+template<class T>
+vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse)
 {
     vector<vector<short>> res(sub_matrix_size);
     init_square_mat(sub_matrix_size,res);
     vector<vector<short>> q = get_quantization_matrix(50);
     for(int r = 0; r < sub_matrix_size; r++)
         for(int c = 0; c < sub_matrix_size; c++)
-            res[r][c] = round(mat[r][c]/q[r][c]);
+            res[r][c] = round(inverse ? mat[r][c]*q[r][c] : mat[r][c]/q[r][c]);
     
     return res;
 }
@@ -119,15 +127,31 @@ void dct_compress(ImageMatrix *img)
             fill_aux(row, col, img);
             prod = mult_square_mat(dct_mat, aux);
             prod = mult_square_mat(prod, dct_t);
-            quantize(prod);
+            quantize(prod, false);
         }
     }
 }
 
+//Imprime matriz. format = 'i' para enteros, 'f' para flotantes
+template<class T>
+void print_mat(vector<vector<T>> mat, char format)
+{
+    for(int r = 0; r < sub_matrix_size; r++){
+        for(int c = 0; c < sub_matrix_size; c++)
+        {
+            if(format == 'f')
+                printf("%7.3f ", mat[r][c]);
+            else if(format == 'i')
+                 printf("%3i ", mat[r][c]);
+        }
+        printf("\n");
+    }
+    printf("\n\n\n");
+}
 
 void test()
 {
-    vector< vector < double > > test_mat =
+    /*vector< vector < double > > test_mat =
     {
         {26, -5,  -5,  -5, -5, -5, -5,  8},
         {64,  52,  8,  26, 26, 26, 8, -18},
@@ -137,37 +161,50 @@ void test()
         {0, 8,  -5,  8, 26, 52,  70, 26},
         {-5, -23,  -18, 21, 8,  8, 52,  38},
         {-18, 8,  -5, -5,  -5, 8,  26 ,8}
+    };*/
+    
+    vector< vector < double > > test_mat =
+    {
+        {87, 106,  127,  127, 127, 127, 127,  127},
+        {79,  84,  127,  127, 127, 127, 127, 127},
+        {88,  67, 97, 127, 124, 127,  126 , 119},
+        {89, 90, 86, 111,  124,  127,  122, 120},
+        {90, 102, 77,  90,  123, 127, 118,  124},
+        {89, 90, 81, 78,  121, 127, 116,  127},
+        {84, 74,  94, 80, 115,  125, 119,  127},
+        {78, 74,  101, 89,  107, 122,  124 ,127}
     };
+    
+    print_mat(test_mat, 'f');
     vector< vector < double > > dct_t = transpose(dct_mat);
     vector<vector<double>> prod = mult_square_mat(dct_mat, test_mat);
+    
     prod = mult_square_mat(prod, dct_t);
+    print_mat(prod, 'f');
     
-    for(int r = 0; r < 8; r++){
-        for(int c = 0; c < 8; c++)
-        {
-            printf("%7.3f ", prod[r][c]);
-        }
-        printf("\n");
-    }
-    printf("\n\n\n");
-    vector<vector<short>> q = quantize(prod);
+    vector<vector<short>> q = quantize(prod, false);
+    print_mat(q, 'i');
     
-    for(int r = 0; r < 8; r++){
-        for(int c = 0; c < 8; c++)
-        {
-            printf("%3i ", q[r][c]);
-        }
-        printf("\n");
-    }
+    
+    //Empieza descompresión
+    q = quantize(q, true);
+    
+    print_mat(q,'i');
+    
+    test_mat = mult_square_mat(dct_t, q);
+    test_mat = mult_square_mat(test_mat, dct_mat);
+    print_mat(test_mat, 'f');
 
 }
 
+//segundos actuales
 double get_total_time()
 {
     struct timeval time;
     gettimeofday(&time,NULL);
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
+//segundos actuales usados por el CPU ejecutando este proceso
 double get_cpu_time(){
     return (double)clock() / CLOCKS_PER_SEC;
 }

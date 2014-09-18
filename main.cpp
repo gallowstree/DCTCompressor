@@ -144,6 +144,8 @@ vector<short> zig_zag_matrix(vector<vector<T>> &mat)
     return res;
 }
 
+
+
 void dct_compress(ImageMatrix *img)
 {
     vector< vector < double > > dct_t = transpose(dct_mat);

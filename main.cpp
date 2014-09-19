@@ -10,6 +10,7 @@ using namespace std;
 vector< vector<double> > aux;
 //tamaño de las matrices en que se dividirá la imagen (para otros diferentes de 8, se debe recalcular la matriz dct)
 const int sub_matrix_size = 8;
+const int rle_bias = 128;
 //Matriz dct de 8*8 precalculada, para mejorar performance.
 vector< vector < double > > dct_mat =
 {
@@ -113,6 +114,7 @@ vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse)
     return res;
 }
 
+
 /*
 vector<short> run_length_encode(vector<short> &vec)
 {
@@ -125,11 +127,46 @@ vector<short> run_length_encode(vector<short> &vec)
     }
 }
 */
+
+template<class T>
+vector<short> zig_zag_matrix(vector<vector<T>> &mat)
+{
+    vector<T> res(mat.size() * mat.size());
+    int row = 0, col = 0;
+    
+    while(row < mat.size())
+    {
+        res.push_back(mat[row][col]);
+        //cout << mat[row][col] << " ";
+        if(row == mat.size() - 1)
+        {
+            row = col + 1;
+            col = mat.size()- 1;
+        }
+        else if(col == 0)
+        {
+            col = row + 1;
+            row = 0;
+        }
+        else
+        {
+            row++;
+            col--;
+        }
+    }
+    //cout << endl << endl;
+    return res;
+}
+
+
+
+
 void dct_compress(ImageMatrix *img)
 {
     vector< vector < double > > dct_t = transpose(dct_mat);
     init_square_mat(sub_matrix_size, aux);
     vector<vector<double>> prod;
+    vector<vector<short>> q;
     for(int row = 0; row< (int)(img->width); row+=sub_matrix_size)
     {
         for(int col = 0; col < (int)(img->width); col+=sub_matrix_size)
@@ -137,7 +174,8 @@ void dct_compress(ImageMatrix *img)
             fill_aux(row, col, img);
             prod = mult_square_mat(dct_mat, aux);
             prod = mult_square_mat(prod, dct_t);
-            quantize(prod, false);
+            q = quantize(prod, false);
+            zig_zag_matrix(q);
         }
     }
 }
@@ -161,46 +199,37 @@ void print_mat(vector<vector<T>> mat, char format)
 
 void test()
 {
-    /*vector< vector < double > > test_mat =
+ 
+    //matriz a comprimir
+   vector< vector < double > > test_mat =
     {
-        {26, -5,  -5,  -5, -5, -5, -5,  8},
-        {64,  52,  8,  26, 26, 26, 8, -18},
-        {126,  70, 26, 26, 52, 26,  -5 , -5},
-        {111, 52, 8, 52,  52,  38,  -5, -5},
-        {52, 26, 8,  39,  38, 21, 8,  8},
-        {0, 8,  -5,  8, 26, 52,  70, 26},
-        {-5, -23,  -18, 21, 8,  8, 52,  38},
-        {-18, 8,  -5, -5,  -5, 8,  26 ,8}
-    };*/
-    
-    vector< vector < double > > test_mat =
-    {
-        {87, 106,  127,  127, 127, 127, 127,  127},
-        {79,  84,  127,  127, 127, 127, 127, 127},
-        {88,  67, 97, 127, 124, 127,  126 , 119},
-        {89, 90, 86, 111,  124,  127,  122, 120},
-        {90, 102, 77,  90,  123, 127, 118,  124},
-        {89, 90, 81, 78,  121, 127, 116,  127},
-        {84, 74,  94, 80, 115,  125, 119,  127},
-        {78, 74,  101, 89,  107, 122,  124 ,127}
+        {87, 106, 127, 127, 127, 127, 127, 127},
+        {79, 84,  127, 127, 127, 127, 127, 127},
+        {88, 67,  97,  127, 124, 127, 126, 119},
+        {89, 90,  86,  111, 124, 127, 122, 120},
+        {90, 102, 77,  90,  123, 127, 118, 124},
+        {89, 90,  81,  78,  121, 127, 116, 127},
+        {84, 74,  94,  80,  115, 125, 119, 127},
+        {78, 74,  101, 89,  107, 122, 124 ,127}
     };
-    
+
     print_mat(test_mat, 'f');
+    //multiplicar dtc * m * dct ^T
     vector< vector < double > > dct_t = transpose(dct_mat);
     vector<vector<double>> prod = mult_square_mat(dct_mat, test_mat);
     
     prod = mult_square_mat(prod, dct_t);
     print_mat(prod, 'f');
-    
+    //cuantizar
     vector<vector<short>> q = quantize(prod, false);
     print_mat(q, 'i');
+    zig_zag_matrix(q);
     
-    
-    //Empieza descompresión
+    //Empieza descompresión, multiplicar por coeficientes de cuantización
     q = quantize(q, true);
     
     print_mat(q,'i');
-    
+    //multiplicar dct ^T * m * dct
     test_mat = mult_square_mat(dct_t, q);
     test_mat = mult_square_mat(test_mat, dct_mat);
     print_mat(test_mat, 'f');

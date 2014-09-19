@@ -10,29 +10,29 @@
 	<string>DCTcompressor</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>380F1398-FEF2-40F8-B2DD-115CC085BE06</key>
+		<key>82BF332DD59BEACDDD8DB6F11226BDB8C2CF57D9</key>
 		<string>https://github.com/gallowstree/DCTCompressor.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>DCTcompressor/DCTcompressor.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>380F1398-FEF2-40F8-B2DD-115CC085BE06</key>
+		<key>82BF332DD59BEACDDD8DB6F11226BDB8C2CF57D9</key>
 		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/gallowstree/DCTCompressor.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>380F1398-FEF2-40F8-B2DD-115CC085BE06</string>
+	<string>82BF332DD59BEACDDD8DB6F11226BDB8C2CF57D9</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>380F1398-FEF2-40F8-B2DD-115CC085BE06</string>
+			<string>82BF332DD59BEACDDD8DB6F11226BDB8C2CF57D9</string>
 			<key>IDESourceControlWCCName</key>
 			<string>DCTcompressor</string>
 		</dict>

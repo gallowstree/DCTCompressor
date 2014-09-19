@@ -40,8 +40,17 @@
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
       <PathRunnable
-         FilePath = "/Users/alejandroalvarado/Projects/DCTcompressor/a.out">
+         FilePath = "/Users/alejandroalvarado/cc4/DCTCompressor/a.out">
       </PathRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "3B3D7FFA19BA6E21001F9367"
+            BuildableName = "DCTcompressor"
+            BlueprintName = "DCTcompressor"
+            ReferencedContainer = "container:DCTcompressor.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

@@ -10,7 +10,6 @@ using namespace std;
 vector< vector<double> > aux;
 //tamaño de las matrices en que se dividirá la imagen (para otros diferentes de 8, se debe recalcular la matriz dct)
 const int sub_matrix_size = 8;
-const int rle_bias = 128;
 //Matriz dct de 8*8 precalculada, para mejorar performance.
 vector< vector < double > > dct_mat =
 {
@@ -114,42 +113,57 @@ vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse)
     return res;
 }
 
+void print_v(vector<short> &vec)
+{
+    for(int i = 0; i < vec.size(); i++)
+        cout << vec[i] << " ";
+        cout << endl << endl;
+}
 
 
 vector<short> run_length_encode(vector<short> &vec)
 {
     vector<short> result;
-    int consecutive = 0;
-    int non_rle = 0;
-    short last = -255;
+    int zero_count = 0;
     for(int i = 0; i < vec.size(); i++)
     {
-        if(vec[i]==last)
+        if(vec[i] != 0)
         {
-            consecutive++
-            non_rle = 0;
+            if(zero_count != 0)
+            {
+                result.push_back(0);
+                result.push_back(zero_count);
+                zero_count = 0;
+            }
+            result.push_back(vec[i]);
         }
-        else if(last != -255)
+        else
         {
-            consecutive = 0;
-            non_rle--;
+            zero_count++;
         }
-        last = vec[i];
-        
+
     }
+    if(zero_count != 0)
+    {
+        result.push_back(0);
+        result.push_back(zero_count);
+    }
+    print_v(result);
+
+    return result;
 }
 
 
 template<class T>
 vector<short> zig_zag_matrix(vector<vector<T>> &mat)
 {
-    vector<T> res(mat.size() * mat.size());
+    vector<T> res;
     int row = 0, col = 0;
     
     while(row < mat.size())
     {
         res.push_back(mat[row][col]);
-        //cout << mat[row][col] << " ";
+      
         if(row == mat.size() - 1)
         {
             row = col + 1;
@@ -166,7 +180,6 @@ vector<short> zig_zag_matrix(vector<vector<T>> &mat)
             col--;
         }
     }
-    //cout << endl << endl;
     return res;
 }
 
@@ -235,7 +248,8 @@ void test()
     //cuantizar
     vector<vector<short>> q = quantize(prod, false);
     print_mat(q, 'i');
-    zig_zag_matrix(q);
+    vector<short> v =  zig_zag_matrix(q);
+    run_length_encode(v);
     
     //Empieza descompresión, multiplicar por coeficientes de cuantización
     q = quantize(q, true);
@@ -263,17 +277,16 @@ double get_cpu_time(){
 int main()
 {
     ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/cc4/DCTCompressor/Images/lena512.bmp");
-    char w = 0;
-    cout << sizeof(w) <<endl;
+
     
     double wall0 = get_total_time();
     double cpu0  = get_cpu_time();
-    dct_compress(img);
+   // dct_compress(img);
     double wall1 = get_total_time();
     double cpu1  = get_cpu_time();
     
     test();
-    
+   
     cout << "Tiempo total = " << wall1 - wall0 << endl;
     cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;
 

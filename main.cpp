@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "ImageMatrix.h"
 #include <sys/time.h>
-
+//#include <
 using namespace std;
 
 //contendrá las secciones n*n de la imagen original
@@ -113,8 +113,18 @@ vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse)
     return res;
 }
 
-
-
+/*
+vector<short> run_length_encode(vector<short> &vec)
+{
+    vector<short> result;
+    int consecutive = 0;
+    int non_rle = 0;
+    for(int i = 0; i < vec.size(); i++)
+    {
+        
+    }
+}
+*/
 void dct_compress(ImageMatrix *img)
 {
     vector< vector < double > > dct_t = transpose(dct_mat);
@@ -212,7 +222,8 @@ double get_cpu_time(){
 int main()
 {
     ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/cc4/DCTCompressor/Images/lena512.bmp");
-
+    char w = 0;
+    cout << sizeof(w) <<endl;
     
     double wall0 = get_total_time();
     double cpu0  = get_cpu_time();

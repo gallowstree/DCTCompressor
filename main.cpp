@@ -115,18 +115,30 @@ vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse)
 }
 
 
-/*
+
 vector<short> run_length_encode(vector<short> &vec)
 {
     vector<short> result;
     int consecutive = 0;
     int non_rle = 0;
+    short last = -255;
     for(int i = 0; i < vec.size(); i++)
     {
+        if(vec[i]==last)
+        {
+            consecutive++
+            non_rle = 0;
+        }
+        else if(last != -255)
+        {
+            consecutive = 0;
+            non_rle--;
+        }
+        last = vec[i];
         
     }
 }
-*/
+
 
 template<class T>
 vector<short> zig_zag_matrix(vector<vector<T>> &mat)

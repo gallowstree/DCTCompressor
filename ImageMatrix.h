@@ -7,14 +7,14 @@ using namespace std;
 class ImageMatrix
 {
 	private:
-		short * matrix;		
-		PBITMAPFILEHEADER file_header;
-		PBITMAPINFOHEADER info_header;
+		
 	public:
 		int width, height;
+        PBITMAPFILEHEADER file_header;
+        PBITMAPINFOHEADER info_header;
+        short * matrix;
 		ImageMatrix(std::string path)
-		{
-			
+		{			
 			ifstream file(path);
 			vector<char> buffer;
 			if(file)

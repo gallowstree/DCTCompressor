@@ -280,9 +280,14 @@ double get_cpu_time(){
 
 int main()
 {
-    ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/cc4/DCTCompressor/Images/lena512.bmp");
+    ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/projects/DCTCompressor/Images/boat.bmp");
     ofstream file("compressed.bin", ios::binary);
-    
+    cout <<sizeof(BITMAPFILEHEADER)<<endl;
+
+
+    file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
+    file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
+    return 0;
     double wall0 = get_total_time();
     double cpu0  = get_cpu_time();
     dct_compress(img, file);

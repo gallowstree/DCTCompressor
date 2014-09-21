@@ -209,6 +209,33 @@ void dct_compress(ImageMatrix *img, ofstream &file)
     file.close();
 }
 
+template <class T>
+void run_length_decode(vector<T> in)
+{
+    vector<T> out;
+    print_v(in);
+    for(int i = 0; i < in.size(); i++)
+    {
+        if(in[i] == 0)
+        {
+            for(int j = 0; j < in[i+1]; j++)
+                out.push_back(0);
+            i++;
+        }
+        else
+        {
+            out.push_back(in[i]);
+        }
+    }
+    print_v(out);
+    cout<<out.size()<<endl;
+}
+
+void dct_decompress()
+{
+    
+}
+
 //Imprime matriz. format = 'i' para enteros, 'f' para flotantes
 template<class T>
 void print_mat(vector<vector<T>> mat, char format)
@@ -232,12 +259,12 @@ void test()
     //matriz a comprimir
    vector< vector < double > > test_mat =
     {
-        {127, 127, 127, 127, 127, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127},
+        {15, 127, 127, 127, 87, 97, 27, 127},
+        {127, 127, 127, 127, 17, 127, 127, 127},
+        {127, 20, 127, 127, 77, 127, 127, 127},
+        {127, 127, 127, 127, 47, 127, 127, 127},
+        {127, 127, 127, 127, 57, 127, 127, 127},
+        {127, 127, 127, 127, 17, 127, 127, 127},
         {127, 127, 127, 127, 127, 127, 127, 127},
         {127, 127, 127, 127, 127, 127, 127, 127}
     };
@@ -253,16 +280,16 @@ void test()
     vector<vector<short>> q = quantize(prod, false);
     print_mat(q, 'i');
     vector<short> v =  zig_zag_matrix(q);
-    run_length_encode(v);
     
+    run_length_decode(run_length_encode(v));
     //Empieza descompresión, multiplicar por coeficientes de cuantización
-    q = quantize(q, true);
+   /* q = quantize(q, true);
     
     print_mat(q,'i');
     //multiplicar dct ^T * m * dct
     test_mat = mult_square_mat(dct_t, q);
     test_mat = mult_square_mat(test_mat, dct_mat);
-    print_mat(test_mat, 'f');
+    print_mat(test_mat, 'f');*/
 
 }
 
@@ -280,15 +307,15 @@ double get_cpu_time(){
 
 int main()
 {
-    ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/projects/DCTCompressor/Images/boat.bmp");
+    ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/projects/DCTCompressor/Images/lena512.bmp");
     ofstream file("compressed.bmp", ios::binary);
-/*
+
     //este código hay que moverlo...
     //se escriben los headers al archivo (hay que hacerlo cuando se comprime)
     file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
     file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
    //generar la paleta, necesario al momento de la recontrucción, pero no hay que guardarlo en la comprimirda
-    for (int i = 0; i < 128; i++) {
+/*    for (int i = 0; i < 128; i++) {
         file << (char)i;
         file << (char)i;
         file << (char)i;
@@ -308,11 +335,11 @@ int main()
     return 0;*/
     double wall0 = get_total_time();
     double cpu0  = get_cpu_time();
-    dct_compress(img, file);
+    //dct_compress(img, file);
     double wall1 = get_total_time();
     double cpu1  = get_cpu_time();
     
-    //test();
+    test();
    
     cout << "Tiempo total = " << wall1 - wall0 << endl;
     cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;

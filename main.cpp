@@ -281,13 +281,31 @@ double get_cpu_time(){
 int main()
 {
     ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/projects/DCTCompressor/Images/boat.bmp");
-    ofstream file("compressed.bin", ios::binary);
-    cout <<sizeof(BITMAPFILEHEADER)<<endl;
-
-
+    ofstream file("compressed.bmp", ios::binary);
+/*
+    //este código hay que moverlo...
+    //se escriben los headers al archivo (hay que hacerlo cuando se comprime)
     file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
     file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
-    return 0;
+   //generar la paleta, necesario al momento de la recontrucción, pero no hay que guardarlo en la comprimirda
+    for (int i = 0; i < 128; i++) {
+        file << (char)i;
+        file << (char)i;
+        file << (char)i;
+        file << (char)0;
+    }
+    for (int i = -128; i < 0; i++) {
+        file << (char)i;
+        file << (char)i;
+        file << (char)i;
+        file << (char)0;
+    }
+    //imprimir bytes de imagen
+    file.write(reinterpret_cast<const char*>(img->matrix), sizeof(char)*img->width*img->height);
+            
+
+    
+    return 0;*/
     double wall0 = get_total_time();
     double cpu0  = get_cpu_time();
     dct_compress(img, file);

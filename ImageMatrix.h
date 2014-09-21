@@ -12,7 +12,7 @@ class ImageMatrix
 		int width, height;
         PBITMAPFILEHEADER file_header;
         PBITMAPINFOHEADER info_header;
-        short * matrix;
+        char * matrix;
 		ImageMatrix(std::string path)
 		{			
 			ifstream file(path);
@@ -29,12 +29,12 @@ class ImageMatrix
 
         		this->width = info_header->biWidth;
         		this->height = info_header->biHeight;
-        		matrix = new short[width * height];        		
+        		matrix = new char[width * height];
     		 	for(int row = 0; row < height ; row++)
 			    {
 			    	for(int col = 0; col < width ; col++)
 				    {
-				    	matrix[row * width + col] =/* row * width + col;*/buffer[ file_header->bfOffBits + row * width + col] & 0xFF; //Llenar matriz interna, volver positivo con el AND		   				    			    				    	
+				    	matrix[row * width + col] =/* row * width + col;*/buffer[ file_header->bfOffBits + row * width + col]; //& 0xFF; //Llenar matriz interna, volver positivo con el AND
 				    }				    
 			    }
 			}

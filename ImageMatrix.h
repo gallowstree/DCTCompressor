@@ -9,7 +9,7 @@ class ImageMatrix
 	private:
 		
 	public:
-		int width, height;
+		int width, height, size;
         PBITMAPFILEHEADER file_header;
         PBITMAPINFOHEADER info_header;
         char * matrix;
@@ -21,6 +21,7 @@ class ImageMatrix
 			{
 				file.seekg(0, ios::end); //Mover posición al final del buffer
 				int length = file.tellg(); //Obtener posición en el buffer
+                this->size = length;
 				file.seekg(0, ios::beg); //Regresar el buffer
 				buffer.resize(length); //dar tamaño al buffer
         		file.read(&buffer[0],length); //escribir en el buffer

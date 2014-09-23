@@ -2,6 +2,7 @@
 #include "math.h"
 #include "stdio.h"
 #include "ImageMatrix.h"
+#include "CompressedImage.h"
 #include <sys/time.h>
 //#include <
 using namespace std;
@@ -186,12 +187,13 @@ vector<short> zig_zag_matrix(vector<vector<T>> &mat)
 
 
 
-void dct_compress(ImageMatrix *img, ofstream &file)
+int dct_compress(ImageMatrix *img, ofstream &file)
 {
     vector< vector < double > > dct_t = transpose(dct_mat);
     init_square_mat(sub_matrix_size, aux);
     vector<vector<double>> prod;
     vector<vector<short>> q;
+    int total_size = 0;
     for(int row = 0; row< (int)(img->width); row+=sub_matrix_size)
     {
         for(int col = 0; col < (int)(img->width); col+=sub_matrix_size)
@@ -204,9 +206,11 @@ void dct_compress(ImageMatrix *img, ofstream &file)
             vector<char> writeMe = run_length_encode(flat);
             char size = writeMe.size();
             file.write((const char *)&writeMe[0], size);
+            total_size+= size;
         }
     }
     file.close();
+    return total_size;
 }
 
 template <class T>
@@ -307,14 +311,14 @@ double get_cpu_time(){
 
 int main()
 {
-    ImageMatrix* img = new ImageMatrix("/Users/alejandroalvarado/projects/DCTCompressor/Images/lena512.bmp");
-    ofstream file("compressed.bmp", ios::binary);
+    ImageMatrix* img = new ImageMatrix("Images/lena512.bmp");
+    ofstream file("compressed.bin", ios::binary);
 
     //este código hay que moverlo...
     //se escriben los headers al archivo (hay que hacerlo cuando se comprime)
     file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
     file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
-   //generar la paleta, necesario al momento de la recontrucción, pero no hay que guardarlo en la comprimirda
+   //generar la paleta, necesario al momento de la recontsrucción, pero no hay que guardarlo en la comprimirda
 /*    for (int i = 0; i < 128; i++) {
         file << (char)i;
         file << (char)i;
@@ -329,22 +333,28 @@ int main()
     }
     //imprimir bytes de imagen
     file.write(reinterpret_cast<const char*>(img->matrix), sizeof(char)*img->width*img->height);
-            
-
+*/
     
-    return 0;*/
+    
     double wall0 = get_total_time();
     double cpu0  = get_cpu_time();
-    //dct_compress(img, file);
+    int compressed_bytes = dct_compress(img, file);
     double wall1 = get_total_time();
     double cpu1  = get_cpu_time();
-    
-    test();
+    cout << "Se leyeron " << img->size << " bytes en la imagen original."<<endl;
+    cout << "Se escribieron " << compressed_bytes <<" bytes que representan los datos de la imagen comprimida." <<endl;
+    cout << "Y " << sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) << " de headers del archivo" <<endl;
+    //test();
    
     cout << "Tiempo total = " << wall1 - wall0 << endl;
     cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;
 
     delete img;
+    
+    
+    CompressedImage* c = new CompressedImage("compressed.bin");
+    
+    delete c;
     return 0;
 }
 

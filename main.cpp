@@ -214,10 +214,10 @@ int dct_compress(ImageMatrix *img, ofstream &file)
 }
 
 template <class T>
-void run_length_decode(vector<T> in)
+vector<T> run_length_decode(vector<T> in)
 {
     vector<T> out;
-    print_v(in);
+    //print_v(in);
     for(int i = 0; i < in.size(); i++)
     {
         if(in[i] == 0)
@@ -231,13 +231,14 @@ void run_length_decode(vector<T> in)
             out.push_back(in[i]);
         }
     }
-    print_v(out);
+    //print_v(out);
     cout<<out.size()<<endl;
+    return out;
 }
 
-void dct_decompress()
+void dct_decompress(CompressedImage* img)
 {
-    
+    vector<char> unrle = run_length_decode(img->color_data);
 }
 
 //Imprime matriz. format = 'i' para enteros, 'f' para flotantes
@@ -353,6 +354,7 @@ int main()
     
     
     CompressedImage* c = new CompressedImage("compressed.bin");
+    dct_decompress(c);
     
     delete c;
     return 0;

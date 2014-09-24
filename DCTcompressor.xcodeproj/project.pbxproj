@@ -12,12 +12,16 @@
 		3B6C3FC719BA6E5000394445 /* bmp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bmp.h; sourceTree = "<group>"; };
 		3B6C3FC819BA6E5000394445 /* ImageMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageMatrix.h; sourceTree = "<group>"; };
 		3B6C3FC919BA6E5000394445 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		3BA04CF119D3830A00B08867 /* IMatrix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IMatrix.h; sourceTree = "<group>"; };
+		3BA04CF219D384A600B08867 /* makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = makefile; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		3B3D7FF519BA6E21001F9367 = {
 			isa = PBXGroup;
 			children = (
+				3BA04CF219D384A600B08867 /* makefile */,
+				3BA04CF119D3830A00B08867 /* IMatrix.h */,
 				3B1A7FAA19D2091100A5586F /* CompressedImage.cpp */,
 				3B1A7FAB19D2091100A5586F /* CompressedImage.h */,
 				3B6C3FC719BA6E5000394445 /* bmp.h */,

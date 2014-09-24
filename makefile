@@ -1,7 +1,7 @@
 make: DCTcompressor
 
 DCTcompressor: 
-	g++ CompressedImage.cpp main.cpp -std=c++11
+	g++ IMatrix.h CompressedImage.cpp main.cpp -std=c++11
 
 clean:
 	rm *.out

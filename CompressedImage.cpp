@@ -40,3 +40,13 @@ CompressedImage::~CompressedImage()
    
 }
 
+void CompressedImage::setValue(int row, int col, char val)
+{
+    color_data[row * width + col] = val;
+}
+
+char CompressedImage::getValue(int row, int col)
+{
+    return  color_data[row * width + col];
+}
+

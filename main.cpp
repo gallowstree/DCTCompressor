@@ -238,7 +238,8 @@ vector<T> run_length_decode(vector<T> in)
 
 void dct_decompress(CompressedImage* img)
 {
-    vector<char> unrle = run_length_decode(img->color_data);
+   img->color_data = run_length_decode(img->color_data);
+    
 }
 
 //Imprime matriz. format = 'i' para enteros, 'f' para flotantes

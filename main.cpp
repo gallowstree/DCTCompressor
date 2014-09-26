@@ -247,13 +247,16 @@ void dct_decompress(CompressedImage* img)
     
     vector< vector < double > > dct_t = transpose(dct_mat);
     init_square_mat(sub_matrix_size, aux);
-
+    vector<vector<double>> prod;
     
     for(int row = 0; row< (int)(img->width); row+=sub_matrix_size)
     {
         for(int col = 0; col < (int)(img->width); col+=sub_matrix_size)
         {
-             fill_aux(row, col, img);
+            fill_aux(row, col, img);
+            prod = mult_square_mat(dct_t, aux);
+            prod = mult_square_mat(prod, dct_mat);
+
         }
     }
 }

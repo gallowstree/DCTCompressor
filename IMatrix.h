@@ -14,6 +14,7 @@ template <class T> class IMatrix
 public:    
     virtual ~IMatrix() {};
     virtual void setValue(int row, int col, T val) = 0;
+    virtual T getValue(int row, int col) = 0;
 };
 
 #endif

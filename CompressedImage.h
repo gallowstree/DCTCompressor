@@ -12,7 +12,7 @@
 
 #include <vector>
 #include "IMatrix.h"
-using namespace std;
+
 class CompressedImage : public IMatrix<char>
 {
     private:
@@ -21,7 +21,7 @@ class CompressedImage : public IMatrix<char>
         int width, height;
         PBITMAPFILEHEADER file_header;
         PBITMAPINFOHEADER info_header;
-        vector<char> color_data;
+        std::vector<char> color_data;
         CompressedImage(std::string path);
         ~CompressedImage();
         void setValue(int row, int col, char val);

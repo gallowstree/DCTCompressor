@@ -1,10 +1,15 @@
 #define _USE_MATH_DEFINES
+#include <iostream>
+#include <fstream>
+#include <sys/time.h>
 #include "math.h"
 #include "stdio.h"
 #include "ImageMatrix.h"
 #include "CompressedImage.h"
-#include <sys/time.h>
-//#include <
+#include "IMatrix.h"
+
+
+
 using namespace std;
 
 //contendrá las secciones n*n de la imagen original
@@ -37,7 +42,7 @@ vector<vector<short>> quantiztion_50 =
 };
 
 //Llenar la matriz auxiliar con la sección n*n de la imagen que empieza en row_start, col_start
-void fill_aux(int row_start, int col_start, ImageMatrix* img)
+void fill_aux(int row_start, int col_start, IMatrix<char>* img)
 {
     int col_start_b = col_start;
     for(int row = 0; row < sub_matrix_size; row++, row_start++)
@@ -238,8 +243,19 @@ vector<T> run_length_decode(vector<T> in)
 
 void dct_decompress(CompressedImage* img)
 {
-   img->color_data = run_length_decode(img->color_data);
+    img->color_data = run_length_decode(img->color_data);
     
+    vector< vector < double > > dct_t = transpose(dct_mat);
+    init_square_mat(sub_matrix_size, aux);
+
+    
+    for(int row = 0; row< (int)(img->width); row+=sub_matrix_size)
+    {
+        for(int col = 0; col < (int)(img->width); col+=sub_matrix_size)
+        {
+             fill_aux(row, col, img);
+        }
+    }
 }
 
 //Imprime matriz. format = 'i' para enteros, 'f' para flotantes

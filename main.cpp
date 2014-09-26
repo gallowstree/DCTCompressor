@@ -50,7 +50,9 @@ void fill_aux(int row_start, int col_start, IMatrix<char>* img)
         for(int col = 0; col < sub_matrix_size; col++, col_start++)
         {
             aux[row][col] = img->getValue(row_start, col_start);
+            //cout << aux[row][col] << "  ";
         }
+        cout <<endl;        cout <<endl;        cout <<endl;
         col_start = col_start_b;
     }
 }
@@ -107,14 +109,16 @@ vector<vector<short>> get_quantization_matrix(int quality)
 //Divide cada elemento de mat por la matriz de cuantización
 //Si inverse es verdadero, multiplica en vez de dividir (para descompresión)
 template<class T>
-vector<vector<char>> quantize(vector<vector<T>> &mat, bool inverse)
+vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse)
 {
-    vector<vector<char>> res(sub_matrix_size);
+    vector<vector<short>> res(sub_matrix_size);
     init_square_mat(sub_matrix_size,res);
     vector<vector<short>> q = get_quantization_matrix(50);
     for(int r = 0; r < sub_matrix_size; r++)
         for(int c = 0; c < sub_matrix_size; c++)
+        {
             res[r][c] = round(inverse ? mat[r][c]*q[r][c] : mat[r][c]/q[r][c]);
+        }
     
     return res;
 }
@@ -161,7 +165,7 @@ vector<char> run_length_encode(vector<T> &vec)
 
 
 template<class T>
-vector<T> zig_zag_matrix(vector<vector<T>> &mat)
+vector<short> zig_zag_matrix(vector<vector<T>> &mat)
 {
     vector<T> res;
     int row = 0, col = 0;
@@ -190,7 +194,22 @@ vector<T> zig_zag_matrix(vector<vector<T>> &mat)
 }
 
 
-
+//Imprime matriz. format = 'i' para enteros, 'f' para flotantes
+template<class T>
+void print_mat(vector<vector<T>> mat, char format)
+{
+    for(int r = 0; r < sub_matrix_size; r++){
+        for(int c = 0; c <  sub_matrix_size; c++)
+        {
+            if(format == 'f')
+                printf("%7.3f ", mat[r][c]);
+            else if(format == 'i')
+                printf("%3d ", mat[r][c]);
+        }
+        printf("\n");
+    }
+    printf("\n\n\n");
+}
 
 
 int dct_compress(ImageMatrix *img, ofstream &file)
@@ -198,7 +217,7 @@ int dct_compress(ImageMatrix *img, ofstream &file)
     vector< vector < double > > dct_t = transpose(dct_mat);
     init_square_mat(sub_matrix_size, aux);
     vector<vector<double>> prod;
-    vector<vector<char>> q;
+    vector<vector<short>> q;
     int total_size = 0;
     for(int row = 0; row< (int)(img->width); row+=sub_matrix_size)
     {
@@ -207,8 +226,11 @@ int dct_compress(ImageMatrix *img, ofstream &file)
             fill_aux(row, col, img);
             prod = mult_square_mat(dct_mat, aux);
             prod = mult_square_mat(prod, dct_t);
+            print_mat(prod, 'f');
             q = quantize(prod, false);
-            vector<char> flat = zig_zag_matrix(q);
+            print_mat(q, 'i');
+            vector<short> flat = zig_zag_matrix(q);
+            print_v(flat);
             vector<char> writeMe = run_length_encode(flat);
             char size = writeMe.size();
             file.write((const char *)&writeMe[0], size);
@@ -243,17 +265,20 @@ vector<T> run_length_decode(vector<T> in)
 }
 
 template<class T>
-vector<vector<char>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
+vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
 {
-    vector<vector<char>> mat(dimension);
+    vector<vector<T>> mat(dimension);
     init_square_mat(dimension, mat);
     int row = 0, col = 0;
     int i = start;
     while(row < dimension)
     {
       
-        mat[row][col] = vec[i++];
-      
+        if(i < 64)
+            mat[row][col] = vec[i++];
+        else
+            break;
+        
         if(row == dimension - 1)
         {
             row = col + 1;
@@ -269,9 +294,14 @@ vector<vector<char>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
             row++;
             col--;
         }        
-    }    
+    }
+    cout << mat.size() << " - " << mat[0].size() <<endl;
     return mat;
 }
+
+
+
+
 
 void dct_decompress(CompressedImage* img)
 {
@@ -280,52 +310,40 @@ void dct_decompress(CompressedImage* img)
     vector< vector < double > > dct_t = transpose(dct_mat);
     init_square_mat(sub_matrix_size, aux);
     vector<vector<double>> prod;
+    vector<vector<short>> q;
     vector<vector<char>> current;
+    cout << "color data  "<< img->color_data.size() <<endl;;
     for(int i = 0; i < img->color_data.size(); i+= sub_matrix_size * sub_matrix_size)
     {
+        cout << "color" <<endl;
+        print_v(img->color_data);
         current = unzig_zag_matrix(img->color_data, i,sub_matrix_size * sub_matrix_size);
-        current = quantize(current, true);
-        prod = mult_square_mat(dct_t, current);
+        print_mat(current, 'i');
+        q = quantize(current, true);
+        print_mat(q, 'i');
+        prod = mult_square_mat(dct_t, q);
         prod = mult_square_mat(prod, dct_mat);
+        print_mat(prod, 'f');
     }
 }
-
-//Imprime matriz. format = 'i' para enteros, 'f' para flotantes
-template<class T>
-void print_mat(vector<vector<T>> mat, char format)
-{
-    for(int r = 0; r < sub_matrix_size; r++){
-        for(int c = 0; c < sub_matrix_size; c++)
-        {
-            if(format == 'f')
-                printf("%7.3f ", mat[r][c]);
-            else if(format == 'i')
-                 printf("%3i ", mat[r][c]);
-        }
-        printf("\n");
-    }
-    printf("\n\n\n");
-}
-
-
 
 
 void test()
 {
- 
+ /*
     //matriz a comprimir
-   vector< vector < double > > test_mat =
+    vector< vector < double > > test_mat =
     {
-        {15, 127, 127, 127, 87, 97, 27, 127},
-        {127, 127, 127, 127, 17, 127, 127, 127},
-        {127, 20, 127, 127, 77, 127, 127, 127},
-        {127, 127, 127, 127, 47, 127, 127, 127},
-        {127, 127, 127, 127, 57, 127, 127, 127},
-        {127, 127, 127, 127, 17, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127},
-        {127, 127, 127, 127, 127, 127, 127, 127}
+        {87, 106, 127, 127, 127, 127, 127, 127},
+        {79, 84,  127, 127, 127, 127, 127, 127},
+        {88, 67,  97,  127, 124, 127, 126, 119},
+        {89, 90,  86,  111, 124, 127, 122, 120},
+        {90, 102, 77,  90,  123, 127, 118, 124},
+        {89, 90,  81,  78,  121, 127, 116, 127},
+        {84, 74,  94,  80,  115, 125, 119, 127},
+        {78, 74,  101, 89,  107, 122, 124 ,127}
     };
-
+    
     print_mat(test_mat, 'f');
     //multiplicar dtc * m * dct ^T
     vector< vector < double > > dct_t = transpose(dct_mat);
@@ -334,11 +352,11 @@ void test()
     prod = mult_square_mat(prod, dct_t);
     print_mat(prod, 'f');
     //cuantizar
-    vector<vector<char>> q = quantize(prod, false);
+    vector<vector<short>> q = quantize(prod, false);
     print_mat(q, 'i');
-    vector<char> v =  zig_zag_matrix(q);
-    //unzig_zag_matrix(v, 0,8);
-    //run_length_decode(run_length_encode(v));
+    vector<short> v =  zig_zag_matrix(q);
+    run_length_encode(v);
+    
     //Empieza descompresión, multiplicar por coeficientes de cuantización
     q = quantize(q, true);
     
@@ -347,7 +365,9 @@ void test()
     test_mat = mult_square_mat(dct_t, q);
     test_mat = mult_square_mat(test_mat, dct_mat);
     print_mat(test_mat, 'f');
-
+*/
+    
+//    CompressedImage *c = new CompressedImage();
 }
 
 //segundos actuales
@@ -364,7 +384,7 @@ double get_cpu_time(){
 
 int main()
 {
-    ImageMatrix* img = new ImageMatrix("Images/lena512.bmp");
+    ImageMatrix* img = new ImageMatrix("Images/64.bmp");
     ofstream file("compressed.bin", ios::binary);
 
     //este código hay que moverlo...
@@ -397,17 +417,23 @@ int main()
     cout << "Se leyeron " << img->size << " bytes en la imagen original."<<endl;
     cout << "Se escribieron " << compressed_bytes <<" bytes que representan los datos de la imagen comprimida." <<endl;
     cout << "Y " << sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) << " de headers del archivo" <<endl;
-    test();
+    //test();
    
     cout << "Tiempo total = " << wall1 - wall0 << endl;
     cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;
 
     delete img;
     
-    
+
     CompressedImage* c = new CompressedImage("compressed.bin");
+    wall0 = get_total_time();
+    cpu0  = get_cpu_time();
     dct_decompress(c);
-    
+    wall1 = get_total_time();
+    cpu1  = get_cpu_time();
+    cout << "Tiempo total = " << wall1 - wall0 << endl;
+    cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;
+
     delete c;
     return 0;
 }

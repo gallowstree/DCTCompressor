@@ -50,7 +50,7 @@ void fill_aux(int row_start, int col_start, IMatrix<char>* img)
         for(int col = 0; col < sub_matrix_size; col++, col_start++)
         {
             aux[row][col] = img->getValue(row_start, col_start);
-            //cout << aux[row][col] << "  ";
+            cout << aux[row][col] << "  ";
         }
         cout <<endl;        cout <<endl;        cout <<endl;
         col_start = col_start_b;
@@ -80,6 +80,25 @@ vector<vector<double>> mult_square_mat(vector<vector<T>> &mat1, vector<vector<T2
             for(int col = 0; col < size; col++)
             {
                 product[row][r_col] +=  mat1[row][col]*mat2[col][r_col];
+            }
+        }
+    }
+    return product;
+}
+
+template<class T, class T2>
+vector<vector<char>> mult_square_mat_char(vector<vector<T>> &mat1, vector<vector<T2>> &mat2)
+{
+    int size = mat1.size();
+    vector<vector<char>> product(size);
+    init_square_mat(size, product);
+    for(int row = 0; row < size; row++)
+    {
+        for(int r_col = 0; r_col < size; r_col++)
+        {
+            for(int col = 0; col < size; col++)
+            {
+                product[row][r_col] +=  (char)(round(mat1[row][col]*mat2[col][r_col]));
             }
         }
     }
@@ -322,8 +341,8 @@ void dct_decompress(CompressedImage* img)
         q = quantize(current, true);
         print_mat(q, 'i');
         prod = mult_square_mat(dct_t, q);
-        prod = mult_square_mat(prod, dct_mat);
-        print_mat(prod, 'f');
+        current = mult_square_mat_char(prod, dct_mat);
+        print_mat(current, 'i');
     }
 }
 

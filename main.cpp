@@ -50,9 +50,9 @@ void fill_aux(int row_start, int col_start, IMatrix<char>* img)
         for(int col = 0; col < sub_matrix_size; col++, col_start++)
         {
             aux[row][col] = img->getValue(row_start, col_start);
-            cout << aux[row][col] << "  ";
+            //cout << aux[row][col] << "  ";
         }
-        cout <<endl;        cout <<endl;        cout <<endl;
+        //cout <<endl;        cout <<endl;        cout <<endl;
         col_start = col_start_b;
     }
 }
@@ -245,11 +245,11 @@ int dct_compress(ImageMatrix *img, ofstream &file)
             fill_aux(row, col, img);
             prod = mult_square_mat(dct_mat, aux);
             prod = mult_square_mat(prod, dct_t);
-            print_mat(prod, 'f');
+            //print_mat(prod, 'f');
             q = quantize(prod, false);
-            print_mat(q, 'i');
+            //print_mat(q, 'i');
             vector<short> flat = zig_zag_matrix(q);
-            print_v(flat);
+            //print_v(flat);
             vector<char> writeMe = run_length_encode(flat);
             char size = writeMe.size();
             file.write((const char *)&writeMe[0], size);
@@ -314,7 +314,6 @@ vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
             col--;
         }        
     }
-    cout << mat.size() << " - " << mat[0].size() <<endl;
     return mat;
 }
 
@@ -322,7 +321,7 @@ vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
 
 
 
-void dct_decompress(CompressedImage* img)
+void dct_decompress(CompressedImage* img, ofstream &file)
 {
     img->color_data = run_length_decode(img->color_data);
     
@@ -334,15 +333,17 @@ void dct_decompress(CompressedImage* img)
     cout << "color data  "<< img->color_data.size() <<endl;;
     for(int i = 0; i < img->color_data.size(); i+= sub_matrix_size * sub_matrix_size)
     {
-        cout << "color" <<endl;
-        print_v(img->color_data);
+        //print_v(img->color_data);
         current = unzig_zag_matrix(img->color_data, i,sub_matrix_size * sub_matrix_size);
-        print_mat(current, 'i');
+        //print_mat(current, 'i');
         q = quantize(current, true);
-        print_mat(q, 'i');
+       // print_mat(q, 'i');
         prod = mult_square_mat(dct_t, q);
         current = mult_square_mat_char(prod, dct_mat);
-        print_mat(current, 'i');
+        //print_mat(current, 'i');
+        for (int r = 0; r < current.size(); r++) {
+            file.write((const char *)&current[r], current[r].size());
+        }
     }
 }
 
@@ -401,59 +402,56 @@ double get_cpu_time(){
     return (double)clock() / CLOCKS_PER_SEC;
 }
 
-int main()
+void comprimir(string path, string out)
 {
-    ImageMatrix* img = new ImageMatrix("Images/64.bmp");
-    ofstream file("compressed.bin", ios::binary);
-
-    //este código hay que moverlo...
-    //se escriben los headers al archivo (hay que hacerlo cuando se comprime)
+    ImageMatrix* img = new ImageMatrix(path);
+    ofstream file(out, ios::binary);
     file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
     file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
-   //generar la paleta, necesario al momento de la recontsrucción, pero no hay que guardarlo en la comprimirda
-/*    for (int i = 0; i < 128; i++) {
-        file << (char)i;
-        file << (char)i;
-        file << (char)i;
-        file << (char)0;
-    }
-    for (int i = -128; i < 0; i++) {
-        file << (char)i;
-        file << (char)i;
-        file << (char)i;
-        file << (char)0;
-    }
-    //imprimir bytes de imagen
-    file.write(reinterpret_cast<const char*>(img->matrix), sizeof(char)*img->width*img->height);
-*/
-    
-    
-    double wall0 = get_total_time();
-    double cpu0  = get_cpu_time();
+    cout << img->file_header->bfType <<endl;
     int compressed_bytes = dct_compress(img, file);
-    double wall1 = get_total_time();
-    double cpu1  = get_cpu_time();
+    delete img;
+    /*
     cout << "Se leyeron " << img->size << " bytes en la imagen original."<<endl;
     cout << "Se escribieron " << compressed_bytes <<" bytes que representan los datos de la imagen comprimida." <<endl;
     cout << "Y " << sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) << " de headers del archivo" <<endl;
-    //test();
-   
-    cout << "Tiempo total = " << wall1 - wall0 << endl;
-    cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;
+*/
+}
 
-    delete img;
+void descomprimir(string path, string out)
+{
+    CompressedImage* c = new CompressedImage(path);
+    cout << c->file_header->bfType <<endl;
+    ofstream file(out, ios::binary);
+    file.write(reinterpret_cast<const char*>(c->file_header), sizeof(BITMAPFILEHEADER));
+    file.write(reinterpret_cast<const char*>(c->info_header), sizeof(BITMAPINFOHEADER));
+    /*//generar la paleta
+     for (int i = 0; i < 128; i++)
+     {
+         file << (char)i;
+         file << (char)i;
+         file << (char)i;
+         file << (char)0;
+     }
+     for (int i = -128; i < 0; i++)
+     {
+         file << (char)i;
+         file << (char)i;
+         file << (char)i;
+         file << (char)0;
+     }
+
     
-
-    CompressedImage* c = new CompressedImage("compressed.bin");
-    wall0 = get_total_time();
-    cpu0  = get_cpu_time();
-    dct_decompress(c);
-    wall1 = get_total_time();
-    cpu1  = get_cpu_time();
-    cout << "Tiempo total = " << wall1 - wall0 << endl;
-    cout << "Tiempo CPU   = " << cpu1  - cpu0  << endl;
-
+    dct_decompress(c, file);*/
+    file.close();
     delete c;
+
+}
+
+int main()
+{
+    comprimir("Images/lena512.bmp","compressed.bin" );
+    descomprimir("compressed.bin", "reconstructed.bmp");
     return 0;
 }
 

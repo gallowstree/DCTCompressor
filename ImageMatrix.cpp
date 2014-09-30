@@ -31,6 +31,7 @@ ImageMatrix::ImageMatrix(std::string path)
                 matrix[row * width + col] =/* row * width + col;*/buffer[ file_header->bfOffBits + row * width + col]; //& 0xFF; //Llenar matriz interna, volver positivo con el AND
             }				    
         }
+        file.close();
     }
     
     

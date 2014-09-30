@@ -50,9 +50,9 @@ void fill_aux(int row_start, int col_start, IMatrix<char>* img)
         for(int col = 0; col < sub_matrix_size; col++, col_start++)
         {
             aux[row][col] = img->getValue(row_start, col_start);
-            //cout << aux[row][col] << "  ";
+            cout << aux[row][col] << "  ";
         }
-        //cout <<endl;        cout <<endl;        cout <<endl;
+        cout <<endl;        cout <<endl;        cout <<endl;
         col_start = col_start_b;
     }
 }
@@ -187,10 +187,11 @@ template<class T>
 vector<short> zig_zag_matrix(vector<vector<T>> &mat)
 {
     vector<T> res;
-    int row = 0, col = 0;
+    int row = 0, col = 0, i = 0;
     
     while(row < mat.size())
     {
+        //cout << row << " " << col <<" "<< i++ <<endl;
         res.push_back(mat[row][col]);
       
         if(row == mat.size() - 1)
@@ -252,11 +253,11 @@ int dct_compress(ImageMatrix *img, ofstream &file)
             //print_v(flat);
             vector<char> writeMe = run_length_encode(flat);
             char size = writeMe.size();
+            print_v(writeMe);
             file.write((const char *)&writeMe[0], size);
             total_size+= size;
         }
     }
-    file.close();
     return total_size;
 }
 
@@ -279,25 +280,21 @@ vector<T> run_length_decode(vector<T> in)
         }
     }
     //print_v(out);
-    cout<<out.size()<<endl;
+    //cout<<out.size()<<endl;
     return out;
 }
 
 template<class T>
-vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
+vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int dimension)
 {
-    vector<vector<T>> mat(dimension);
-    init_square_mat(dimension, mat);
-    int row = 0, col = 0;
-    int i = start;
+    
+    vector<vector<T>> mat(dimension*dimension);
+    init_square_mat(dimension*dimension, mat);
+    int row = 0, col = 0, i = 0;
+    
     while(row < dimension)
     {
-      
-        if(i < 64)
-            mat[row][col] = vec[i++];
-        else
-            break;
-        
+        mat[row][col] = vec[i++];
         if(row == dimension - 1)
         {
             row = col + 1;
@@ -312,8 +309,10 @@ vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int start, int dimension)
         {
             row++;
             col--;
-        }        
+        }
     }
+
+    
     return mat;
 }
 
@@ -330,27 +329,33 @@ void dct_decompress(CompressedImage* img, ofstream &file)
     vector<vector<double>> prod;
     vector<vector<short>> q;
     vector<vector<char>> current;
-    cout << "color data  "<< img->color_data.size() <<endl;;
-    for(int i = 0; i < img->color_data.size(); i+= sub_matrix_size * sub_matrix_size)
+    vector<char> buffer(img->width * img->height);
+    cout << "buffer size " << buffer.size()<<endl;
+    /*
+         TODO: for each 8*8 block that comes out of color data
+         1) unzigzag matrix
+         2) unquantize
+         3) multiply dct_t with unquantized
+         4) multiply as chars the product of 4 with dct_mat
+         5) write to appropriate buffer position
+    */
+    for(int i = 0; i < img->color_data.size(); i+= sub_matrix_size*sub_matrix_size)
     {
-        //print_v(img->color_data);
-        current = unzig_zag_matrix(img->color_data, i,sub_matrix_size * sub_matrix_size);
-        //print_mat(current, 'i');
+        vector<char> sub_vector(img->color_data.begin() + i, img->color_data.begin() + i + sub_matrix_size*sub_matrix_size);
+        current = unzig_zag_matrix(sub_vector, sub_matrix_size);
         q = quantize(current, true);
-       // print_mat(q, 'i');
         prod = mult_square_mat(dct_t, q);
         current = mult_square_mat_char(prod, dct_mat);
-        //print_mat(current, 'i');
-        for (int r = 0; r < current.size(); r++) {
-            file.write((const char *)&current[r], current[r].size());
-        }
+        
+        
     }
+    
 }
 
 
 void test()
 {
- /*
+ 
     //matriz a comprimir
     vector< vector < double > > test_mat =
     {
@@ -375,6 +380,8 @@ void test()
     vector<vector<short>> q = quantize(prod, false);
     print_mat(q, 'i');
     vector<short> v =  zig_zag_matrix(q);
+    unzig_zag_matrix(v, sub_matrix_size);
+    /*
     run_length_encode(v);
     
     //Empieza descompresión, multiplicar por coeficientes de cuantización
@@ -408,31 +415,26 @@ void comprimir(string path, string out)
     ofstream file(out, ios::binary);
     file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
     file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
-    cout << img->file_header->bfType <<endl;
+   
     int compressed_bytes = dct_compress(img, file);
+
+    file.close();
     delete img;
-    /*
+    
     cout << "Se leyeron " << img->size << " bytes en la imagen original."<<endl;
     cout << "Se escribieron " << compressed_bytes <<" bytes que representan los datos de la imagen comprimida." <<endl;
     cout << "Y " << sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) << " de headers del archivo" <<endl;
-*/
+
 }
 
 void descomprimir(string path, string out)
 {
-    CompressedImage* c = new CompressedImage(path);
-    cout << c->file_header->bfType <<endl;
     ofstream file(out, ios::binary);
-    file.write(reinterpret_cast<const char*>(c->file_header), sizeof(BITMAPFILEHEADER));
-    file.write(reinterpret_cast<const char*>(c->info_header), sizeof(BITMAPINFOHEADER));
-    /*//generar la paleta
-     for (int i = 0; i < 128; i++)
-     {
-         file << (char)i;
-         file << (char)i;
-         file << (char)i;
-         file << (char)0;
-     }
+    CompressedImage* c = new CompressedImage(path);
+
+
+    //generar la paleta
+   
      for (int i = -128; i < 0; i++)
      {
          file << (char)i;
@@ -440,9 +442,15 @@ void descomprimir(string path, string out)
          file << (char)i;
          file << (char)0;
      }
-
+    for (int i = 0; i < 128; i++)
+    {
+        file << (char)i;
+        file << (char)i;
+        file << (char)i;
+        file << (char)0;
+    }
     
-    dct_decompress(c, file);*/
+    dct_decompress(c, file);
     file.close();
     delete c;
 
@@ -450,8 +458,9 @@ void descomprimir(string path, string out)
 
 int main()
 {
-    comprimir("Images/lena512.bmp","compressed.bin" );
+    comprimir("Images/16.bmp","compressed.bin" );
     descomprimir("compressed.bin", "reconstructed.bmp");
+    //test();
     return 0;
 }
 

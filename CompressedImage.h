@@ -22,10 +22,11 @@ class CompressedImage : public IMatrix<char>
         PBITMAPFILEHEADER file_header;
         PBITMAPINFOHEADER info_header;
         std::vector<char> color_data;
-        CompressedImage(std::string path);
+    CompressedImage(std::string path);
         ~CompressedImage();
         void setValue(int row, int col, char val);
         char getValue(int row, int col);
+
     
     
 };

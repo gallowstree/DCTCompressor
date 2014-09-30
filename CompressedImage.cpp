@@ -30,6 +30,8 @@ CompressedImage::CompressedImage(std::string path)
         this->width = info_header->biWidth;
         this->height = info_header->biHeight;
         color_data = vector<char>(buffer.begin() + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER), buffer.end());
+        color_data.shrink_to_fit();
+        file.close();
     }
     
     

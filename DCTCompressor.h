@@ -17,12 +17,22 @@
 #include "math.h"
 #include <fstream>
 
+typedef struct CompressionResult {
+    int original_filesize;
+    int original_image_data_size;
+    int compressed_bytes;
+    int header_bytes;
+    double compression_ratio;
+    
+} CompressionResult;
+
+
 class DCTCompressor
 {
 private:
-    vector< vector<double> > aux;
-    const int sub_matrix_size = 8;
-    vector< vector < double > > dct_mat =
+    std::vector< std::vector<double> > aux;
+    
+    std::vector< std::vector< double > > dct_mat =
     {
         {0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536},
         {0.4904,  0.4157,  0.2778,  0.0975, -0.0975, -0.2778, -0.4157, -0.4904},
@@ -33,7 +43,7 @@ private:
         {0.1913, -0.4619,  0.4619, -0.1913, -0.1913,  0.4619, -0.4619,  0.1913},
         {0.0975, -0.2778,  0.4157, -0.4904,  0.4904, -0.4157,  0.2778 ,-0.0975}
     };
-    vector<vector<short>> quantiztion_50 =
+    std::vector<std::vector<short>> quantiztion_50 =
     {
         {16,  11,  10,  16,  24,  40,  51,  61},
         {12,  12,  14,  19,  26,  58,  60,  55},
@@ -47,46 +57,57 @@ private:
 
     
 public:
+    static const int sub_matrix_size = 8;
     void fill_aux(int row_start, int col_start, IMatrix<char>* img);
-
+    /*CONSTRUCTOR Y DESTRUCTOR*/
+    
+    DCTCompressor();
+    ~DCTCompressor();
+    
     /*MÉTODOS DE OPERACIONES CON MATRICES (HAY QUE MOVERLOS A OTRA CLASE)*/
     
     template<class T>
-    void init_square_mat(int size, vector<vector<T>> &mat);
+    void init_square_mat(int size, std::vector<std::vector<T>> &mat);
     template<class T, class T2>
-    vector<vector<double>> mult_square_mat(vector<vector<T>> &mat1, vector<vector<T2>> &mat2);
+    std::vector<std::vector<double>> mult_square_mat(std::vector<std::vector<T>> &mat1, std::vector<std::vector<T2>> &mat2);
     template<class T, class T2>
-    vector<vector<char>> mult_square_mat_char(vector<vector<T>> &mat1, vector<vector<T2>> &mat2);
+    std::vector<std::vector<char>> mult_square_mat_char(std::vector<std::vector<T>> &mat1, std::vector<std::vector<T2>> &mat2);
     template<class T>
-    vector<vector<double>> transpose(vector<vector<T>> &mat);
+    std::vector<std::vector<double>> transpose(std::vector<std::vector<T>> &mat);
     
     /*CUANTIZACIÓN*/
     
-    vector<vector<short>> get_quantization_matrix(int quality);
+    std::vector<std::vector<short>> get_quantization_matrix(int quality);
     template<class T>
-    vector<vector<short>> quantize(vector<vector<T>> &mat, bool inverse);
+    std::vector<std::vector<short>> quantize(std::vector<std::vector<T>> &mat, bool inverse);
     template<class T>
     
     /*RUN LENGTH ENCODE*/
     
-    vector<char> run_length_encode(vector<T> &vec);
+    std::vector<char> run_length_encode(std::vector<T> &vec);
     template <class T>
-    vector<T> run_length_decode(vector<T> in);
+    std::vector<T> run_length_decode(std::vector<T> in);
     
     /*ZIG ZAG*/
     
     template<class T>
-    vector<short> zig_zag_matrix(vector<vector<T>> &mat);
+    std::vector<short> zig_zag_matrix(std::vector<std::vector<T>> &mat);
     template<class T>
-    vector<vector<T>> unzig_zag_matrix(vector<T> &vec, int dimension);
+    std::vector<std::vector<T>> unzig_zag_matrix(std::vector<T> &vec, int dimension);
 
     /*COMPRESIÓN*/
     
-    int dct_compress(ImageMatrix *img, ofstream &file);
+    int dct_compress(ImageMatrix *img, std::ofstream &file);
     
     /*DESCOMPRESIÓN*/
     
-    void dct_decompress(CompressedImage* img, ofstream &file);
+    void dct_decompress(CompressedImage* img, std::ofstream &file);
+    void write_grayscale_pallette(std::ofstream &file);
+    
+    /*ENTRY POINTS*/
+    
+    void compress_image(std::string in, std::string out, int quality);
+    void decompress_image(std::string in, std::string out, int quality);
     
 };
 

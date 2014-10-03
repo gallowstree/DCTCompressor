@@ -28,7 +28,7 @@ ImageMatrix::ImageMatrix(std::string path)
         {
             for(int col = 0; col < width ; col++)
             {
-                matrix[row * width + col] =/* row * width + col;*/buffer[ file_header->bfOffBits + row * width + col]; //& 0xFF; //Llenar matriz interna, volver positivo con el AND
+                matrix[row * width + col] =buffer[ file_header->bfOffBits + row * width + col]; //& 0xFF; 
             }				    
         }
         file.close();

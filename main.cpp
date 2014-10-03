@@ -50,9 +50,7 @@ void fill_aux(int row_start, int col_start, IMatrix<char>* img)
         for(int col = 0; col < sub_matrix_size; col++, col_start++)
         {
             aux[row][col] = img->getValue(row_start, col_start);
-            cout << aux[row][col] << "  ";
         }
-        cout <<endl;        cout <<endl;        cout <<endl;
         col_start = col_start_b;
     }
 }
@@ -246,14 +244,10 @@ int dct_compress(ImageMatrix *img, ofstream &file)
             fill_aux(row, col, img);
             prod = mult_square_mat(dct_mat, aux);
             prod = mult_square_mat(prod, dct_t);
-            //print_mat(prod, 'f');
             q = quantize(prod, false);
-            //print_mat(q, 'i');
             vector<short> flat = zig_zag_matrix(q);
-            //print_v(flat);
             vector<char> writeMe = run_length_encode(flat);
             char size = writeMe.size();
-            print_v(writeMe);
             file.write((const char *)&writeMe[0], size);
             total_size+= size;
         }
@@ -265,7 +259,6 @@ template <class T>
 vector<T> run_length_decode(vector<T> in)
 {
     vector<T> out;
-    //print_v(in);
     for(int i = 0; i < in.size(); i++)
     {
         if(in[i] == 0)
@@ -279,8 +272,6 @@ vector<T> run_length_decode(vector<T> in)
             out.push_back(in[i]);
         }
     }
-    //print_v(out);
-    //cout<<out.size()<<endl;
     return out;
 }
 
@@ -330,15 +321,9 @@ void dct_decompress(CompressedImage* img, ofstream &file)
     vector<vector<short>> q;
     vector<vector<char>> current;
     vector<char> buffer(img->width * img->height);
-    cout << "buffer size " << buffer.size()<<endl;
-    /*
-         TODO: for each 8*8 block that comes out of color data
-         1) unzigzag matrix
-         2) unquantize
-         3) multiply dct_t with unquantized
-         4) multiply as chars the product of 4 with dct_mat
-         5) write to appropriate buffer position
-    */
+
+    int col_start = 0, row_start = 0, j=0;
+   
     for(int i = 0; i < img->color_data.size(); i+= sub_matrix_size*sub_matrix_size)
     {
         vector<char> sub_vector(img->color_data.begin() + i, img->color_data.begin() + i + sub_matrix_size*sub_matrix_size);
@@ -348,7 +333,27 @@ void dct_decompress(CompressedImage* img, ofstream &file)
         current = mult_square_mat_char(prod, dct_mat);
         
         
+        for (int row = 0; row < sub_matrix_size; row++, row_start++)
+        {
+            for (int col = 0; col < sub_matrix_size; col++, col_start++)
+            {
+                buffer[row_start * img->width + col_start] = current[row][col];
+            }
+            col_start = j;
+        }
+        if(j == img->width -sub_matrix_size)
+        {
+            col_start = j = 0;
+        }
+        else if(col_start < img->width-1)
+        {
+            row_start -= sub_matrix_size;
+            col_start+=sub_matrix_size;
+            j+=sub_matrix_size;
+        }
+        
     }
+    file.write((const char *)&buffer[0], buffer.size());
     
 }
 
@@ -431,17 +436,11 @@ void descomprimir(string path, string out)
 {
     ofstream file(out, ios::binary);
     CompressedImage* c = new CompressedImage(path);
-
+    
+    file.write(reinterpret_cast<const char*>(c->file_header), sizeof(BITMAPFILEHEADER));
+    file.write(reinterpret_cast<const char*>(c->info_header), sizeof(BITMAPINFOHEADER));
 
     //generar la paleta
-   
-     for (int i = -128; i < 0; i++)
-     {
-         file << (char)i;
-         file << (char)i;
-         file << (char)i;
-         file << (char)0;
-     }
     for (int i = 0; i < 128; i++)
     {
         file << (char)i;
@@ -449,6 +448,14 @@ void descomprimir(string path, string out)
         file << (char)i;
         file << (char)0;
     }
+
+     for (int i = -128; i < 0; i++)
+     {
+         file << (char)i;
+         file << (char)i;
+         file << (char)i;
+         file << (char)0;
+     }
     
     dct_decompress(c, file);
     file.close();
@@ -458,7 +465,7 @@ void descomprimir(string path, string out)
 
 int main()
 {
-    comprimir("Images/16.bmp","compressed.bin" );
+    comprimir("Images/lena512.bmp","compressed.bin" );
     descomprimir("compressed.bin", "reconstructed.bmp");
     //test();
     return 0;

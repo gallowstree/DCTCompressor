@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		3B11F56F19DF3D16005D94B0 /* DCTCompressor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DCTCompressor.cpp; sourceTree = "<group>"; };
+		3B11F57019DF3D16005D94B0 /* DCTCompressor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DCTCompressor.h; sourceTree = "<group>"; };
 		3B1A7FAA19D2091100A5586F /* CompressedImage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedImage.cpp; sourceTree = "<group>"; };
 		3B1A7FAB19D2091100A5586F /* CompressedImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CompressedImage.h; sourceTree = "<group>"; };
 		3B6424B319D49AB80080DA11 /* ImageMatrix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageMatrix.h; sourceTree = "<group>"; };
@@ -28,6 +30,8 @@
 				3B1A7FAB19D2091100A5586F /* CompressedImage.h */,
 				3B6C3FC719BA6E5000394445 /* bmp.h */,
 				3B6C3FC819BA6E5000394445 /* ImageMatrix.cpp */,
+				3B11F56F19DF3D16005D94B0 /* DCTCompressor.cpp */,
+				3B11F57019DF3D16005D94B0 /* DCTCompressor.h */,
 				3B6C3FC919BA6E5000394445 /* main.cpp */,
 			);
 			sourceTree = "<group>";

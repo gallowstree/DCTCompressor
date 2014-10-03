@@ -12,34 +12,7 @@
 
 using namespace std;
 
-//contendrá las secciones n*n de la imagen original
-vector< vector<double> > aux;
-//tamaño de las matrices en que se dividirá la imagen (para otros diferentes de 8, se debe recalcular la matriz dct)
-const int sub_matrix_size = 8;
-//Matriz dct de 8*8 precalculada, para mejorar performance.
-vector< vector < double > > dct_mat =
-{
-    {0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536,  0.3536},
-    {0.4904,  0.4157,  0.2778,  0.0975, -0.0975, -0.2778, -0.4157, -0.4904},
-    {0.4619,  0.1913, -0.1913, -0.4619, -0.4619, -0.1913,  0.1913 , 0.4619},
-    {0.4157, -0.0975, -0.4904, -0.2778,  0.2778,  0.4904,  0.0975, -0.4157},
-    {0.3536, -0.3536, -0.3536,  0.3536,  0.3536, -0.3536, -0.3536,  0.3536},
-    {0.2778, -0.4904,  0.0975,  0.4157, -0.4157, -0.0975,  0.4904, -0.2778},
-    {0.1913, -0.4619,  0.4619, -0.1913, -0.1913,  0.4619, -0.4619,  0.1913},
-    {0.0975, -0.2778,  0.4157, -0.4904,  0.4904, -0.4157,  0.2778 ,-0.0975}
-};
-//Matriz de cuantización estándard, nivel de calidad 50/100.
-vector<vector<short>> quantiztion_50 =
-{
-    {16,  11,  10,  16,  24,  40,  51,  61},
-    {12,  12,  14,  19,  26,  58,  60,  55},
-    {14,  13,  16,  24,  40,  57,  69,  56},
-    {14,  17,  22,  29,  51,  87,  80,  62},
-    {18,  22,  37,  56,  68, 109, 103,  77},
-    {24,  35,  55,  64,  81, 104, 113,  92},
-    {49,  64,  78,  87, 103, 121, 120,  101},
-    {72,  92,  95,  98, 112, 100, 103,  99}
-};
+
 
 //Llenar la matriz auxiliar con la sección n*n de la imagen que empieza en row_start, col_start
 void fill_aux(int row_start, int col_start, IMatrix<char>* img)
@@ -175,7 +148,6 @@ vector<char> run_length_encode(vector<T> &vec)
         result.push_back(0);
         result.push_back(zero_count);
     }
-    //print_v(result);
 
     return result;
 }
@@ -189,7 +161,6 @@ vector<short> zig_zag_matrix(vector<vector<T>> &mat)
     
     while(row < mat.size())
     {
-        //cout << row << " " << col <<" "<< i++ <<endl;
         res.push_back(mat[row][col]);
       
         if(row == mat.size() - 1)

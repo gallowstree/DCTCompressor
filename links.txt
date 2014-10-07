@@ -2,4 +2,10 @@ QUANTIZATION:
 
 http://msemac.redwoods.edu/~darnold/math45/laproj/Fall98/PKen/dct.pdf
 
+LINEAR ALGEBRA:
+http://people.missouristate.edu/jrebaza/assets/10compression.pdf ***
+
+BASIC CONCEPTS: (NO DCT)
+http://www.math.tamu.edu/~yvorobet/MATH304-2011A/Lect2-07web.pdf
+
 

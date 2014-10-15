@@ -7,29 +7,6 @@
 
 using namespace std;
 
-template<class T>
-void print_mat(vector<vector<T>> mat, char format)
-{
-    for(int r = 0; r < DCTCompressor::sub_matrix_size; r++){
-        for(int c = 0; c <  DCTCompressor::sub_matrix_size; c++)
-        {
-            if(format == 'f')
-                printf("%7.3f ", mat[r][c]);
-            else if(format == 'i')
-                printf("%3d ", mat[r][c]);
-        }
-        cout <<endl;
-    }
-    cout <<endl<<endl<<endl;
-}
-
-template<class T>
-void print_v(vector<T> &vec)
-{
-    for(int i = 0; i < vec.size(); i++)
-        cout << (int)vec[i] << " ";
-    cout << endl << endl;
-}
 
 
 double get_total_time()

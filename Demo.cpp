@@ -58,4 +58,10 @@ int main()
     
     vector< vector < double > > dct_t = compressor->transpose(DCTCompressor::dct_mat);
     vector<vector<double>> prod = compressor->mult_square_mat(DCTCompressor::dct_mat, test_mat);
+    print_mat(prod, 'f');
+    prod = compressor->mult_square_mat(prod, dct_t);
+    print_mat(prod, 'f');
+    
+    
+    
 }

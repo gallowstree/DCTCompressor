@@ -40,7 +40,7 @@
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
       <PathRunnable
-         FilePath = "/Users/alejandroalvarado/Projects/DCTcompressor/a.out">
+         FilePath = "/Users/alejandroalvarado/Projects/DCTcompressor/Demo.out">
       </PathRunnable>
       <MacroExpansion>
          <BuildableReference

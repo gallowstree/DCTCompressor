@@ -56,12 +56,14 @@ public:
     std::vector<std::vector<char>> mult_square_mat_char(std::vector<std::vector<T>> &mat1, std::vector<std::vector<T2>> &mat2);
     template<class T>
     std::vector<std::vector<double>> transpose(std::vector<std::vector<T>> &mat);
+    template<class T>
+    void multiply_mat_scalar(std::vector<std::vector<T>> &mat, T scalar);
     
     /*CUANTIZACIÓN*/
     
     std::vector<std::vector<short>> get_quantization_matrix(int quality);
     template<class T>
-    std::vector<std::vector<short>> quantize(std::vector<std::vector<T>> &mat, bool inverse);
+    std::vector<std::vector<short>> quantize(std::vector<std::vector<T>> &mat, bool inverse, int quality);
     template<class T>
     
     /*RUN LENGTH ENCODE*/
@@ -79,11 +81,11 @@ public:
 
     /*COMPRESIÓN*/
     
-    int dct_compress(ImageMatrix *img, std::ofstream &file);
+    int dct_compress(ImageMatrix *img, std::ofstream &file, int quality);
     
     /*DESCOMPRESIÓN*/
     
-    void dct_decompress(CompressedImage* img, std::ofstream &file);
+    void dct_decompress(CompressedImage* img, std::ofstream &file, int quality);
     void write_grayscale_pallette(std::ofstream &file);
     
     /*ENTRY POINTS*/

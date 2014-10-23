@@ -7,6 +7,7 @@
 //
 
 #include "DCTCompressor.h"
+#include <iostream>
 using namespace std;
 
 std::vector< std::vector< double > > DCTCompressor::dct_mat =
@@ -33,6 +34,8 @@ std::vector<std::vector<short>> DCTCompressor::quantiztion_50 =
     {72,  92,  95,  98, 112, 100, 103,  99}
 };
 
+bool qMatGenerated = false;
+
 void DCTCompressor::compress_image(string path, string out, int quality)
 {
     ImageMatrix* img = new ImageMatrix(path);
@@ -40,7 +43,7 @@ void DCTCompressor::compress_image(string path, string out, int quality)
     file.write(reinterpret_cast<const char*>(img->file_header), sizeof(BITMAPFILEHEADER));
     file.write(reinterpret_cast<const char*>(img->info_header), sizeof(BITMAPINFOHEADER));
     
-    int compressed_bytes = dct_compress(img, file);
+    int compressed_bytes = dct_compress(img, file, quality);
     
     file.close();
     delete img;
@@ -52,7 +55,7 @@ void DCTCompressor::compress_image(string path, string out, int quality)
 }
 
 
-int DCTCompressor::dct_compress(ImageMatrix *img, ofstream &file)
+int DCTCompressor::dct_compress(ImageMatrix *img, ofstream &file, int quality)
 {
     vector< vector < double > > dct_t = transpose(dct_mat);
     init_square_mat(sub_matrix_size, aux);
@@ -66,7 +69,7 @@ int DCTCompressor::dct_compress(ImageMatrix *img, ofstream &file)
             fill_aux(row, col, img);
             prod = mult_square_mat(dct_mat, aux);
             prod = mult_square_mat(prod, dct_t);
-            q = quantize(prod, false);
+            q = quantize(prod, false, quality);
             vector<short> flat = zig_zag_matrix(q);
             vector<char> writeMe = run_length_encode(flat);
             char size = writeMe.size();
@@ -150,7 +153,7 @@ void DCTCompressor::decompress_image(string path, string out, int quality)
     file.write(reinterpret_cast<const char*>(c->info_header), sizeof(BITMAPINFOHEADER));
     write_grayscale_pallette(file);
     
-    dct_decompress(c, file);
+    dct_decompress(c, file, quality);
     file.close();
     delete c;
     
@@ -177,7 +180,7 @@ void DCTCompressor::write_grayscale_pallette(ofstream &file)
 
 }
 
-void DCTCompressor::dct_decompress(CompressedImage* img, ofstream &file)
+void DCTCompressor::dct_decompress(CompressedImage* img, ofstream &file, int quality)
 {
     img->color_data = run_length_decode(img->color_data);
     
@@ -194,7 +197,7 @@ void DCTCompressor::dct_decompress(CompressedImage* img, ofstream &file)
     {
         vector<char> sub_vector(img->color_data.begin() + i, img->color_data.begin() + i + sub_matrix_size*sub_matrix_size);
         current = unzig_zag_matrix(sub_vector, sub_matrix_size);
-        q = quantize(current, true);
+        q = quantize(current, true, quality);
         prod = mult_square_mat(dct_t, q);
         current = mult_square_mat_char(prod, dct_mat);
         
@@ -347,6 +350,18 @@ vector<vector<double>> DCTCompressor::transpose(vector<vector<T>> &mat)
     return outtrans;
 }
 
+template<class T>
+void DCTCompressor::multiply_mat_scalar(vector<vector<T>> &mat, T scalar)
+{
+    int r_size = mat.size();
+    int c_size = mat[0].size();
+    for (int i = 0; i < r_size; ++i)
+        for (int j = 0; j < c_size; ++j){
+            mat[i][j] *= scalar;
+            
+        }
+}
+
 DCTCompressor::DCTCompressor()
 {
     
@@ -359,15 +374,20 @@ DCTCompressor::~DCTCompressor()
 
 vector<vector<short>> DCTCompressor::get_quantization_matrix(int quality)
 {
-    return quantiztion_50; //TODO: generar matrices dependiendo de la calidad
+    if(!qMatGenerated && quality > 50)
+        multiply_mat_scalar(quantiztion_50,(short)((100 - quality)/50));
+    else if(!qMatGenerated && quality < 50)
+        multiply_mat_scalar(quantiztion_50,(short)(50/quality));
+    qMatGenerated = true;
+    return quantiztion_50;
 }
 
 template<class T>
-vector<vector<short>> DCTCompressor::quantize(vector<vector<T>> &mat, bool inverse)
+vector<vector<short>> DCTCompressor::quantize(vector<vector<T>> &mat, bool inverse, int quality)
 {
     vector<vector<short>> res(sub_matrix_size);
     init_square_mat(sub_matrix_size,res);
-    vector<vector<short>> q = get_quantization_matrix(50);
+    vector<vector<short>> q = get_quantization_matrix(quality);
     for(int r = 0; r < sub_matrix_size; r++)
         for(int c = 0; c < sub_matrix_size; c++)
         {
